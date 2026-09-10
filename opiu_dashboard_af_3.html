@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ОПиУ — АЙДИФАРМ 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+#auth-screen{position:fixed;inset:0;background:#eef5fb;display:flex;align-items:center;justify-content:center;z-index:9999}
+.auth-box{background:#fff;border:1px solid #c9e0f2;border-radius:14px;padding:36px 40px;width:320px;text-align:center;box-shadow:0 4px 24px rgba(31,111,168,.12)}
+.auth-logo{width:44px;height:44px;background:#1f6fa8;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;margin:0 auto 16px}
+.auth-title{font-size:15px;font-weight:700;color:#134a70;margin-bottom:4px}
+.auth-sub{font-size:11px;color:#888;margin-bottom:24px}
+.auth-input{width:100%;padding:10px 14px;border:1px solid #c9e0f2;border-radius:8px;font-size:14px;outline:none;text-align:center;letter-spacing:2px;color:#1a1a1a;transition:border .15s}
+.auth-input:focus{border-color:#1f6fa8}
+.auth-btn{width:100%;margin-top:12px;padding:10px;background:#1f6fa8;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.auth-btn:hover{background:#134a70}
+.auth-error{font-size:11px;color:#c0392b;margin-top:8px;min-height:16px}
+#main-content{display:none}
+</style>
+<script>
+function checkPassword(){
+  const val = document.getElementById('pwd-input').value;
+  if(val === 'AF2026'){
+    document.getElementById('auth-screen').style.display='none';
+    document.getElementById('main-content').style.display='block';
+  } else {
+    document.getElementById('pwd-error').textContent='Неверный пароль';
+    document.getElementById('pwd-input').value='';
+    document.getElementById('pwd-input').focus();
+  }
+}
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('pwd-input').addEventListener('keydown', function(e){
+    if(e.key==='Enter') checkPassword();
+  });
+});
+</script>
+<style>
+:root{
+  --bg:#f2f7fb; --bb:#c9e0f2; --surface:#fff;
+  --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --bd:#1f6fa8; --br:#4a90c9;
+  /* status palette (fixed roles, from dataviz skill) */
+  --good:#0ca30c; --good-bg:#e5f6e3;
+  --warn:#fab219; --warn-bg:#fff3d6;
+  --serious:#ec835a; --serious-bg:#fdeae2;
+  --critical:#d03b3b; --critical-bg:#fbe4e1;
+  /* categorical (fixed order, from dataviz skill) */
+  --cat1:#2a78d6; --cat2:#eb6834; --cat3:#1baf7a; --cat4:#eda100; --cat5:#e87ba4; --cat6:#008300; --cat7:#4a3aa7;
+  --violet:#4a3aa7; --violet-bg:#efeafb;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--ink);font-size:12px;line-height:1.45}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#b9d6ee;border-radius:4px}
+.hdr{background:#fff;border-bottom:1px solid var(--bb);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.hdr-l{display:flex;align-items:center;gap:10px}
+.logo{width:30px;height:30px;background:var(--bd);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff}
+.hdr-title{font-size:13px;font-weight:700;color:#134a70}
+.hdr-sub{font-size:10px;color:#888}
+.tabs{display:flex;gap:4px}
+.tab{border:none;background:transparent;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;color:#666;cursor:pointer;transition:.15s}
+.tab:hover{background:var(--bg)}
+.tab.active{background:var(--bd);color:#fff}
+.wrap{max-width:1140px;margin:0 auto;padding:14px 16px 40px}
+.sec{display:none}
+.sec.active{display:block}
+.kg{display:grid;gap:8px;margin-bottom:10px}
+.kg-3{grid-template-columns:repeat(3,1fr)}
+.kg-4{grid-template-columns:repeat(4,1fr)}
+.kc{background:#fff;border:1px solid var(--bb);border-radius:10px;padding:10px 12px;box-shadow:0 1px 2px rgba(11,11,11,.03)}
+.kc .l{font-size:10px;color:#888;margin-bottom:3px}
+.kc .v{font-size:17px;font-weight:600;color:#134a70}
+.kc .s{font-size:10px;color:#999;margin-top:3px;display:flex;align-items:center;gap:4px}
+.kc .v.pos{color:var(--good)}
+.kc .v.neg{color:var(--critical)}
+.kc.risk{border-color:#f3c6c6;background:var(--critical-bg)}
+.kc.risk .l{color:#a33}
+.kc.risk .v{color:var(--critical)}
+.kc.warn{border-color:#f0dfa0;background:var(--warn-bg)}
+.kc.warn .l{color:#8a6100}
+.kc.warn .v{color:#8a6100}
+.kc.violet{border-color:#d9c2f0;background:var(--violet-bg)}
+.kc.violet .l{color:#3d2260}
+.kc.violet .v{color:var(--violet)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.cc{background:#fff;border:1px solid var(--bb);border-radius:10px;padding:12px;box-shadow:0 1px 2px rgba(11,11,11,.03)}
+.slabel{font-size:11px;font-weight:700;color:#134a70;margin:14px 0 6px;letter-spacing:.2px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+td,th{padding:5px 6px;border-bottom:1px solid #eef2f5;white-space:nowrap;font-variant-numeric:tabular-nums}
+th{font-size:9.5px;color:#898781;font-weight:700;text-align:right;text-transform:uppercase;letter-spacing:.3px}
+th:first-child,td:first-child{text-align:left;white-space:normal;font-variant-numeric:normal}
+tr.tot td{font-weight:700;border-top:1px solid var(--bb);border-bottom:2px solid var(--bb);background:#f8fbfd}
+tr.sub td:first-child{padding-left:18px;color:#777;font-size:10.5px}
+.pos{color:var(--good)}
+.neg{color:var(--critical)}
+.pill-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.pill{border:1px solid var(--bb);background:#fff;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;color:#555;cursor:pointer}
+.pill.active{background:var(--bd);color:#fff;border-color:var(--bd)}
+.insight{display:flex;gap:8px;padding:8px 10px;border-radius:8px;margin-bottom:6px;font-size:11.5px;line-height:1.5}
+.insight.red{background:var(--critical-bg);color:#7a2018}
+.insight.amber{background:var(--warn-bg);color:#5a3a00}
+.insight.green{background:var(--good-bg);color:#0f4a2a}
+.insight.violet{background:var(--violet-bg);color:#3d2260}
+.callout{border:1.5px dashed var(--violet);background:var(--violet-bg);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:11.5px;color:#3d2260}
+.callout b{color:#2a1745}
+.note{font-size:10px;color:#999;margin-top:6px}
+/* comparison table */
+.cmp-card{background:#fff;border:1px solid var(--bb);border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 2px rgba(11,11,11,.03)}
+.cmp-head{padding:10px 14px;font-size:11px;font-weight:700;color:#134a70;letter-spacing:.3px;border-bottom:1px solid var(--bb);background:#f8fbfd}
+.cmp-card table{font-size:11.5px}
+.cmp-card td,.cmp-card th{padding:8px 12px}
+.cmp-card tr.tot td{background:#f2f8fc}
+.badge{display:inline-block;padding:2px 9px;border-radius:6px;font-weight:700;font-size:10.5px;min-width:44px;text-align:center}
+.badge.good{background:var(--good-bg);color:var(--good)}
+.badge.bad{background:var(--critical-bg);color:var(--critical)}
+.badge.flat{background:#f1f1ee;color:var(--muted)}
+.legend-row{display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:#666;margin-top:8px;align-items:center}
+.legend-row .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.mini-list{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:10.5px;color:#666;margin-top:8px}
+.mini-list .mi{background:#f7f9fb;border:1px solid #eef2f5;border-radius:6px;padding:4px 8px}
+.mini-list .mi b{color:#333}
+.kpi-header{display:flex;align-items:center;gap:10px;margin:2px 0 8px}
+.kpi-header span{font-size:11px;font-weight:700;color:#134a70;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.kpi-header::after{content:'';flex:1;height:1px;background:var(--bb)}
+.kg-6{grid-template-columns:repeat(6,1fr)}
+@media (max-width:900px){.kg-6{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:560px){.kg-6{grid-template-columns:repeat(2,1fr)}}
+.cs-wrap{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+.cs-donut{position:relative;width:170px;height:170px;flex:0 0 auto}
+.cs-list{flex:1;min-width:260px}
+.cs-row{margin-bottom:9px}
+.cs-row:last-child{margin-bottom:0}
+.cs-top{display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.cs-top .name{display:flex;align-items:center;gap:8px;font-weight:600;color:#222}
+.cs-top .sw{width:10px;height:10px;border-radius:2px;display:inline-block;flex:0 0 auto}
+.cs-top .val{font-weight:700;color:#134a70}
+.cs-track{height:6px;background:#eef2f5;border-radius:3px;overflow:hidden}
+.cs-fill{height:100%;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">АФ</div>
+    <div class="auth-title">ОПиУ и Баланс — АЙДИФАРМ</div>
+    <div class="auth-sub">Введите пароль для доступа</div>
+    <input type="password" id="pwd-input" class="auth-input" placeholder="••••••" autofocus>
+    <button class="auth-btn" onclick="checkPassword()">Войти</button>
+    <div class="auth-error" id="pwd-error"></div>
+  </div>
+</div>
+
+<div id="main-content">
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="logo">АФ</div>
+    <div>
+      <div class="hdr-title">ОПиУ и Баланс — ООО «АЙДИФАРМ»</div>
+      <div class="hdr-sub">Январь – Август 2026 · только для собственников АФ</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="sw('overview')">Обзор</button>
+    <button class="tab" onclick="sw('month')">Разбор месяца</button>
+    <button class="tab" onclick="sw('balance')">Баланс</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ============ OVERVIEW ============ -->
+<div id="sec-overview" class="sec active">
+  <div class="kpi-header" id="kpi-header"><span></span></div>
+  <div class="kg kg-6" id="kpi-ov"></div>
+  <div class="kg kg-3" id="kpi-risk"></div>
+
+  <div class="grid-2">
+    <div class="cc"><div class="slabel" style="margin-top:0">Выручка и чистая прибыль по месяцам</div><div style="position:relative;height:200px"><canvas id="cRevProfit"></canvas></div></div>
+    <div class="cc"><div class="slabel" style="margin-top:0">Маржинальность, %</div><div style="position:relative;height:200px"><canvas id="cMargin"></canvas></div></div>
+  </div>
+
+  <div class="kpi-header" id="cost-header"><span></span></div>
+  <div class="cc cs-wrap">
+    <div class="cs-donut"><canvas id="cCostDonut"></canvas></div>
+    <div class="cs-list" id="cost-structure-list"></div>
+  </div>
+
+  <div class="cc"><div class="slabel" style="margin-top:0">Структура расходов, % от выручки — по месяцам</div><div style="position:relative;height:180px"><canvas id="cStruct"></canvas></div></div>
+
+  <div class="callout" id="callout-ov"></div>
+
+  <div class="slabel">Аналитика CFO</div>
+  <div id="insights-ov"></div>
+</div>
+
+<!-- ============ MONTH ============ -->
+<div id="sec-month" class="sec">
+  <div class="pill-row" id="month-pills"></div>
+  <div class="kg kg-4" id="kpi-month"></div>
+
+  <div class="grid-2">
+    <div class="cc"><div class="slabel" style="margin-top:0">Каскад ОПиУ — от выручки до остатка</div><div style="position:relative;height:230px"><canvas id="cCascade"></canvas></div></div>
+    <div class="cc">
+      <div class="slabel" style="margin-top:0">Структура расходов месяца</div>
+      <div style="position:relative;height:60px"><canvas id="cCostBar"></canvas></div>
+      <div class="legend-row" id="legend-cost"></div>
+    </div>
+  </div>
+
+  <div class="cmp-card">
+    <div class="cmp-head">ДИНАМИКА vs ПРЕДЫДУЩИЙ МЕСЯЦ</div>
+    <table id="tbl-cmp"></table>
+  </div>
+
+  <div class="slabel">Детализация статей месяца</div>
+  <div class="cc"><div class="mini-list" id="mini-detail"></div></div>
+
+  <div class="callout" id="callout-month"></div>
+  <div class="slabel">Комментарий за месяц</div>
+  <div id="insights-month"></div>
+</div>
+
+<!-- ============ BALANCE ============ -->
+<div id="sec-balance" class="sec">
+  <div class="kg kg-4" id="kpi-bal"></div>
+
+  <div class="grid-2">
+    <div class="cc"><div class="slabel" style="margin-top:0">Активы, ₽</div><div style="position:relative;height:160px"><canvas id="cBalAssets"></canvas></div></div>
+    <div class="cc"><div class="slabel" style="margin-top:0">Пассивы, ₽</div><div style="position:relative;height:160px"><canvas id="cBalLiab"></canvas></div></div>
+  </div>
+
+  <div class="grid-2">
+    <div><div class="slabel">Активы — детализация</div><div class="cc"><table id="tbl-bal-assets"></table></div></div>
+    <div><div class="slabel">Пассивы — детализация</div><div class="cc"><table id="tbl-bal-liab"></table></div></div>
+  </div>
+
+  <div class="callout" id="callout-bal"></div>
+
+  <div class="slabel">Аналитика CFO — баланс</div>
+  <div id="insights-bal"></div>
+  <div class="note">Баланс собирается впервые (учёт восстановлен) — пока одна точка на 01.09.2026 (итоги августа). По итогам сентября появится столбец на 01.10 и далее помесячно.</div>
+</div>
+
+</div>
+</div>
+
+<script>
+const MO=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг'];
+const MF=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август'];
+const G='#0ca30c', R='#d03b3b', BD='#1f6fa8', BR='#4a90c9', SER='#ec835a';
+const fm=(v,d=0)=>{const n=Number(v)||0; return (n<0?'-':'')+Math.abs(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});};
+const pct=(v)=>(v*100).toFixed(1)+'%';
+const pp=(v)=>{const s=v>0?'+':(v<0?'':''); return s+(v*100).toFixed(1);};
+
+// ---- P&L data, Jan-Aug 2026 (actuals; Sep started but not yet closed) ----
+const D={
+  revenue: [857650,672600,770500,871600,371600,2952506,1614145,1010000],
+  cogs:    [101270,107878,343985,487911,2796,679843,133180,194810],
+  fot:     [390000,650097,512098,369520,459050,519400,419033,183133],
+  opex:    [15000,15000,45000,15000,30000,105153,118626,60887],
+  commercial:[10909,50000,0,117680,15000,51693,48082,43000],
+  admin:   [52311,30476,24309,4428,5277,113839,103079,54559],
+  taxes:   [25000,25000,25000,25000,25000,25000,40000,40400],
+  belowOp: [0,0,0,0,0,0,0,0],
+  dividends:[288000,244873,169380,0,51990,98239,53074,0],
+  cumulative:[-472915,-923638,-1272911,-1420850,-1638363,-279023,420047,853259],
+};
+D.gross    = D.revenue.map((r,i)=>r-D.cogs[i]-D.fot[i]-D.opex[i]);
+D.pretax   = D.gross.map((g,i)=>g-D.commercial[i]-D.admin[i]);
+D.opProfit = D.pretax.map((p,i)=>p-D.taxes[i]);
+D.netProfit= D.opProfit.map((p,i)=>p-D.belowOp[i]);
+D.ostatok  = D.netProfit.map((n,i)=>n-D.dividends[i]);
+D.grossM   = D.gross.map((g,i)=>D.revenue[i]?g/D.revenue[i]:null);
+D.opM      = D.opProfit.map((p,i)=>D.revenue[i]?p/D.revenue[i]:null);
+D.netM     = D.netProfit.map((p,i)=>D.revenue[i]?p/D.revenue[i]:null);
+
+// fixed categorical colors per cost category (same slot everywhere it appears)
+const COST_CATS=[
+  {key:'cogs',       name:'Себестоимость',              color:'#2a78d6'},
+  {key:'fot',        name:'ФОТ',                        color:'#eb6834'},
+  {key:'opex',       name:'Общепроизводственные',       color:'#1baf7a'},
+  {key:'commercial', name:'Коммерческие',                color:'#eda100'},
+  {key:'admin',      name:'Административные',            color:'#e87ba4'},
+  {key:'taxes',      name:'Налоги',                      color:'#008300'},
+];
+
+// detail subcategories (only non-zero lines matter for drill-down)
+const OPEX_D = {
+  'Транспортные услуги, логистика':[0,0,0,0,0,17049,66811,383],
+  'Содержание автопарка':[0,0,0,0,0,38830,0,0],
+  'Расходы на топливо':[15000,15000,45000,15000,30000,49274,51815,60504],
+};
+const COMM_D = {
+  'Командировочные расходы':[5500,50000,0,12180,15000,51693,15082,7000],
+  'Представительские расходы':[5409,0,0,0,0,0,0,0],
+  'Маркетинговые подрядчики':[0,0,0,105500,0,0,33000,36000],
+};
+const ADM_D = {
+  'Комиссия банка':[5471,15133,3079,4428,5277,13839,3079,3559],
+  'Обучение персонала':[0,0,0,0,0,100000,100000,50000],
+  'Содержание офиса':[0,15343,0,0,0,0,0,0],
+  'Аренда офиса':[23940,0,0,0,0,0,0,0],
+  'Связь, интернет':[15000,0,11230,0,0,0,0,1000],
+  'Программное обеспечение':[7900,0,0,0,0,0,0,0],
+  'Консультационные услуги':[0,0,10000,0,0,0,0,0],
+};
+const TAX_D = { 'УСН начисленный':[25000,25000,25000,25000,25000,25000,40000,40400] };
+
+// ---- Balance, single point: 01.09.2026 (итоги августа) ----
+const BAL = {
+  date:'01.09.2026 (итоги августа)',
+  os:0, finLong:0, cash:68750.77, dzClients:990283, dzSuppliers:0, stock:0, transit:0,
+  profit:833632, loanFounder:0, capital:10000, usnDebt:125402, kzSuppliers:0, kzSalary:90000, kzInsurance:0, kzAdvances:0,
+};
+BAL.totalAssets = BAL.os+BAL.finLong+BAL.cash+BAL.dzClients+BAL.dzSuppliers+BAL.stock+BAL.transit;
+BAL.totalLiab   = BAL.profit+BAL.loanFounder+BAL.capital+BAL.usnDebt+BAL.kzSuppliers+BAL.kzSalary+BAL.kzInsurance+BAL.kzAdvances;
+const AR_OVERDUE = BAL.dzClients; // 100% просрочено, со слов Карины
+const ABONENTKA_DEBT = 1500000; // долг клиентов по абонентке за ПО, не отражён ни в ОПиУ, ни в балансе (оценочно)
+
+const OV_INSIGHTS=[
+  {t:'amber', i:'⚠️', x:'<strong>Январь–май и июнь–август считались по-разному.</strong> Учёт восстанавливался с января по сентябрь, себестоимость до июня признавалась кассовым методом — поднять с/с по старым проектам запуска пока нельзя. Поэтому резкий скачок валовой маржи с −32% (май) до +55.8% (июнь) — это в первую очередь эффект перехода на нормальный учёт, а не разовый рывок бизнеса. Сравнивать месяцы «в лоб» до и после июня некорректно.'},
+  {t:'green', i:'✅', x:'<strong>Июнь–август — устойчиво прибыльные месяцы.</strong> Операционная прибыль 1.46 млн → 752 тыс. → 433 тыс., маржа держится в диапазоне 43–49%. Накопленный результат с начала года вышел в плюс: 853 259 ₽ на конец августа (против −1.64 млн на дно в мае).'},
+  {t:'red',  i:'🔴', x:'<strong>Вся дебиторка от клиентов просрочена — 990 283 ₽ (100%).</strong> Это 93% всех активов компании при остатке денег всего 68.75 тыс. ₽. Реальный риск кассового разрыва, если инкассация не ускорится.'},
+  {t:'violet',i:'📱', x:'<strong>Вне отчёта — долг по абонентке ≈1.5 млн ₽.</strong> Клиенты должны АФ за подписку на ПО, но эта сумма не заведена ни в ОПиУ, ни в баланс. Фактическая дебиторская нагрузка выше показанной здесь примерно в 2.5 раза.'},
+  {t:'amber', i:'⚠️', x:'<strong>Налог (УСН) — расчётная оценка.</strong> 25 тыс./мес до июня, 40 тыс. с июля — фиксированные суммы для примерного начисления, не факт по декларации. Уточнить после сдачи отчётности.'},
+];
+
+const BAL_INSIGHTS=[
+  {t:'red',   i:'🔴', x:'<strong>Дебиторка от клиентов — 990 283 ₽, вся сумма просрочена.</strong> Это 93% активов баланса. При денежном остатке 68.75 тыс. ₽ ликвидность компании держится практически полностью на инкассации этой задолженности.'},
+  {t:'violet',i:'📱', x:'<strong>Долг по абонентке ≈1.5 млн ₽ — вне баланса.</strong> Не отражён ни в активах, ни в ОПиУ. При включении дебиторка выросла бы примерно в 2.5 раза, а реальная валюта баланса — почти в 2.4 раза.'},
+  {t:'green', i:'✅', x:'<strong>Баланс лёгкий и без долговой нагрузки.</strong> Нет кредитов, лизинга, займов и авансов от клиентов. УК всего 10 тыс. ₽, обязательства — только текущий долг по УСН (125.4 тыс.) и по зарплате (90 тыс.).'},
+  {t:'amber', i:'⚠️', x:'<strong>Первая сборка баланса.</strong> Данные восстановлены только на 01.09 — исторической динамики по месяцам пока нет, начнёт копиться со следующего периода (01.10 и далее).'},
+];
+
+const MONTH_INSIGHTS={
+  0:[{t:'green',i:'✅',x:'<strong>Январь в плюсе:</strong> валовая маржа 41%, чистая прибыль 263 тыс. Лучший месяц из первого полугодия по марже.'},
+     {t:'amber',i:'⚠️',x:'Выплачены дивиденды 288 тыс. — больше, чем заработано в этом месяце.'}],
+  1:[{t:'red',i:'🔴',x:'<strong>Убыток −206 тыс.</strong> Себестоимость и ФОТ (650 тыс.) вместе съели почти всю выручку 672.6 тыс. — валовая маржа ушла в минус (−14.9%).'}],
+  2:[{t:'red',i:'🔴',x:'<strong>Третий месяц подряд в минусе (−179.9 тыс.).</strong> Учтено разовое консультационное 10 тыс. Структура затрат не покрывается выручкой 770.5 тыс.'}],
+  3:[{t:'amber',i:'⚠️',x:'<strong>Коммерческие расходы 117.7 тыс.</strong> — пик периода (маркетинговые подрядчики 105.5 тыс.), при этом выручка одна из самых низких. Убыток −147.9 тыс.'}],
+  4:[{t:'red',i:'🔴',x:'<strong>Дно периода: выручка 371.6 тыс., убыток −165.5 тыс.</strong>, валовая маржа −32.4% — худший результат. Себестоимость всё ещё считается кассовым методом.'}],
+  5:[{t:'green',i:'✅',x:'<strong>Перелом: выручка 2.95 млн (рекорд), операционная прибыль 1.46 млн, маржа 55.8%.</strong> С этого месяца учёт затрат восстановлен по методологии — сравнивать с более ранними месяцами напрямую нельзя.'},
+     {t:'amber',i:'⚠️',x:'Обучение персонала 100 тыс., автопарк 38.8 тыс. — разовые статьи, совпавшие с рекордной выручкой.'}],
+  6:[{t:'green',i:'✅',x:'<strong>Июль стабильно сильный:</strong> выручка 1.61 млн, маржа 58.4% — лучшая за период. Обучение персонала ещё раз 100 тыс.'}],
+  7:[{t:'green',i:'✅',x:'<strong>Август: выручка 1.01 млн, маржа 56.6%, чистая прибыль 433 тыс.</strong> Дивиденды не выплачивались. Накопленный итог с начала года вышел на 853 259 ₽.'},
+     {t:'violet',i:'📱',x:'Напоминание: долг клиентов по абонентке (~1.5 млн) в эту цифру не входит.'}],
+};
+
+let curM=7;
+function sw(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['overview','month','balance'][i]===t));
+  document.querySelectorAll('.sec').forEach(el=>el.classList.remove('active'));
+  document.getElementById('sec-'+t).classList.add('active');
+  if(t==='overview') renderOverview();
+  if(t==='month') renderMonth(curM);
+  if(t==='balance') renderBalance();
+}
+
+function renderInsights(el,list){
+  document.getElementById(el).innerHTML = list.map(o=>`<div class="insight ${o.t}"><span>${o.i}</span><span>${o.x}</span></div>`).join('');
+}
+
+// =====================  OVERVIEW  =====================
+let chRP=null, chMg=null, chSt=null, chCostDonut=null;
+function renderOverview(){
+  const i=D.revenue.length-1; // август — последний закрытый месяц
+  const cumRevenue = D.revenue.reduce((a,b)=>a+b,0);
+  document.getElementById('kpi-header').innerHTML = `<span>Ключевые показатели — ${MF[i]} 2026</span>`;
+  let revDeltaHtml = '<div class="s">&nbsp;</div>';
+  if(i>0 && D.revenue[i-1]){
+    const d = (D.revenue[i]-D.revenue[i-1])/D.revenue[i-1];
+    revDeltaHtml = `<div class="s">vs ${MF[i-1].toLowerCase()}: <span class="badge ${d>=0?'good':'bad'}" style="margin-left:2px">${d>=0?'+':''}${(d*100).toFixed(1)}%</span></div>`;
+  }
+  document.getElementById('kpi-ov').innerHTML = `
+    <div class="kc"><div class="l">Выручка (${MF[i].toLowerCase()})</div><div class="v">${(D.revenue[i]/1e6).toFixed(1)} млн</div>${revDeltaHtml}</div>
+    <div class="kc"><div class="l">Вал. прибыль</div><div class="v">${(D.gross[i]/1e6).toFixed(1)} млн</div><div class="s">${pct(D.grossM[i])}</div></div>
+    <div class="kc"><div class="l">Опер. прибыль</div><div class="v">${(D.opProfit[i]/1e6).toFixed(1)} млн</div><div class="s">${pct(D.opM[i])}</div></div>
+    <div class="kc"><div class="l">Чист. прибыль</div><div class="v ${D.netProfit[i]>=0?'pos':'neg'}">${(D.netProfit[i]/1e6).toFixed(1)} млн</div><div class="s">${pct(D.netM[i])}</div></div>
+    <div class="kc"><div class="l">Выручка ${i+1} мес.</div><div class="v">${(cumRevenue/1e6).toFixed(1)} млн</div><div class="s">итого с января</div></div>
+    <div class="kc"><div class="l">Чист. приб. накопл.</div><div class="v ${D.cumulative[i]>=0?'pos':'neg'}">${(D.cumulative[i]/1e6).toFixed(1)} млн</div><div class="s">${i+1} месяцев</div></div>`;
+  document.getElementById('kpi-risk').innerHTML = `
+    <div class="kc risk"><div class="l">Просроченная дебиторка</div><div class="v">${fm(AR_OVERDUE)} ₽</div><div class="s">100% ДЗ от клиентов, 93% активов баланса</div></div>
+    <div class="kc violet"><div class="l">Долг по абонентке (вне отчёта)</div><div class="v">≈ ${fm(ABONENTKA_DEBT)} ₽</div><div class="s">не в ОПиУ и не в балансе</div></div>
+    <div class="kc"><div class="l">Денежные средства на 01.09</div><div class="v">${fm(BAL.cash,2)} ₽</div><div class="s">6% от активов</div></div>`;
+
+  if(chRP) chRP.destroy();
+  chRP = new Chart(document.getElementById('cRevProfit'),{
+    type:'bar',
+    data:{labels:MO, datasets:[
+      {type:'bar',label:'Выручка',data:D.revenue,backgroundColor:BR,order:2,borderRadius:4,barThickness:22},
+      {type:'line',label:'Чистая прибыль',data:D.netProfit,borderColor:G,backgroundColor:G,tension:.25,order:1,pointRadius:3,borderWidth:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}}},
+      scales:{y:{ticks:{callback:v=>(v/1e6).toFixed(1)+'M',font:{size:9}},grid:{color:'#e1e0d9'}},x:{ticks:{font:{size:10}},grid:{display:false}}}}
+  });
+
+  if(chMg) chMg.destroy();
+  chMg = new Chart(document.getElementById('cMargin'),{
+    type:'line',
+    data:{labels:MO, datasets:[
+      {label:'Валовая маржа',data:D.grossM.map(v=>v*100),borderColor:BD,tension:.25,pointRadius:3,borderWidth:2},
+      {label:'Чистая маржа',data:D.netM.map(v=>v*100),borderColor:R,tension:.25,pointRadius:3,borderWidth:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}}},
+      scales:{y:{ticks:{callback:v=>v+'%',font:{size:9}},grid:{color:'#e1e0d9'}},x:{ticks:{font:{size:10}},grid:{display:false}}}}
+  });
+
+  // ---- cumulative cost structure (donut + progress list) ----
+  document.getElementById('cost-header').innerHTML = `<span>Структура расходов — итого ${i+1} мес.</span>`;
+  const costTotals = COST_CATS.map(c=>D[c.key].reduce((a,b)=>a+b,0));
+  const costGrandTotal = costTotals.reduce((a,b)=>a+b,0);
+  if(chCostDonut) chCostDonut.destroy();
+  chCostDonut = new Chart(document.getElementById('cCostDonut'),{
+    type:'doughnut',
+    data:{labels:COST_CATS.map(c=>c.name), datasets:[{data:costTotals, backgroundColor:COST_CATS.map(c=>c.color), borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>ctx.label+': '+fm(ctx.parsed)+' ₽ ('+pct(ctx.parsed/costGrandTotal)+')'}}}}
+  });
+  document.getElementById('cost-structure-list').innerHTML = COST_CATS.map((c,k)=>{
+    const share = costTotals[k]/costGrandTotal;
+    return `<div class="cs-row">
+      <div class="cs-top"><span class="name"><span class="sw" style="background:${c.color}"></span>${c.name}</span><span class="val">${pct(share)}</span></div>
+      <div class="cs-track"><div class="cs-fill" style="width:${(share*100).toFixed(1)}%;background:${c.color}"></div></div>
+    </div>`;
+  }).join('');
+
+  if(chSt) chSt.destroy();
+  const pctOf = arr=>arr.map((v,i)=>D.revenue[i]?v/D.revenue[i]*100:0);
+  chSt = new Chart(document.getElementById('cStruct'),{
+    type:'bar',
+    data:{labels:MO, datasets:COST_CATS.map(c=>({label:c.name,backgroundColor:c.color,data:pctOf(D[c.key])}))},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:9}}}},
+      scales:{x:{stacked:true,ticks:{font:{size:10}},grid:{display:false}},y:{stacked:true,ticks:{callback:v=>v+'%',font:{size:9}},max:100,grid:{color:'#e1e0d9'}}}}
+  });
+
+  document.getElementById('callout-ov').innerHTML = `📱 <b>Вне ОПиУ:</b> клиенты должны АФ за подписку на уже внедрённое ПО (абонентка) ≈ ${fm(ABONENTKA_DEBT)} ₽. Эта сумма не признана выручкой и не выставлена в отчёте — фактическая база начисления шире показанной здесь.`;
+
+  renderInsights('insights-ov', OV_INSIGHTS);
+}
+
+// =====================  MONTH  =====================
+let chCasc=null, chCost=null;
+function renderMonth(idx){
+  curM=idx;
+  document.getElementById('month-pills').innerHTML = MO.map((m,i)=>`<div class="pill ${i===idx?'active':''}" onclick="renderMonth(${i})">${m}</div>`).join('');
+
+  document.getElementById('kpi-month').innerHTML = `
+    <div class="kc"><div class="l">Выручка</div><div class="v">${fm(D.revenue[idx])} ₽</div></div>
+    <div class="kc"><div class="l">Валовая маржа</div><div class="v ${D.grossM[idx]>=0?'pos':'neg'}">${pct(D.grossM[idx])}</div></div>
+    <div class="kc"><div class="l">Чистая прибыль</div><div class="v ${D.netProfit[idx]>=0?'pos':'neg'}">${fm(D.netProfit[idx])} ₽</div></div>
+    <div class="kc"><div class="l">Остаток после дивидендов</div><div class="v ${D.ostatok[idx]>=0?'pos':'neg'}">${fm(D.ostatok[idx])} ₽</div></div>`;
+
+  // ---- cascade / waterfall chart ----
+  const steps=[
+    {l:'Выручка', d:D.revenue[idx], kind:'start'},
+    {l:'Себестоимость', d:-D.cogs[idx], kind:'flow'},
+    {l:'ФОТ', d:-D.fot[idx], kind:'flow'},
+    {l:'ОПР', d:-D.opex[idx], kind:'flow'},
+    {l:'Валовая прибыль', d:D.gross[idx], kind:'sub'},
+    {l:'Коммерческие', d:-D.commercial[idx], kind:'flow'},
+    {l:'Адм. расходы', d:-D.admin[idx], kind:'flow'},
+    {l:'Налоги', d:-D.taxes[idx], kind:'flow'},
+    {l:'Чистая прибыль', d:D.netProfit[idx], kind:'sub'},
+    {l:'Дивиденды', d:-D.dividends[idx], kind:'flow'},
+    {l:'Остаток', d:D.ostatok[idx], kind:'sub'},
+  ];
+  let running=0;
+  const bars=[], colors=[], labels=[];
+  steps.forEach(s=>{
+    labels.push(s.l);
+    if(s.kind==='start'){ bars.push([0,s.d]); running=s.d; colors.push(BD); }
+    else if(s.kind==='sub'){ bars.push([0,s.d]); running=s.d; colors.push(s.d>=0?G:R); }
+    else { const from=running, to=running+s.d; bars.push([Math.min(from,to),Math.max(from,to)]); running=to; colors.push(SER); }
+  });
+  if(chCasc) chCasc.destroy();
+  chCasc = new Chart(document.getElementById('cCascade'),{
+    type:'bar',
+    data:{labels, datasets:[{data:bars, backgroundColor:colors, borderRadius:4, barThickness:20}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>{
+        const s=steps[ctx.dataIndex]; return (s.kind==='flow'?'':'')+fm(Math.abs(s.d))+' ₽'+(s.kind==='flow'&&s.d<0?' (расход)':'');
+      }}}},
+      scales:{x:{ticks:{font:{size:9},maxRotation:40,minRotation:40},grid:{display:false}},
+        y:{ticks:{callback:v=>(v/1e6).toFixed(1)+'M',font:{size:9}},grid:{color:'#e1e0d9'}}}}
+  });
+
+  // ---- month cost structure (single stacked horizontal bar) ----
+  const costVals = COST_CATS.map(c=>D[c.key][idx]);
+  if(chCost) chCost.destroy();
+  chCost = new Chart(document.getElementById('cCostBar'),{
+    type:'bar',
+    data:{labels:[''], datasets:COST_CATS.map((c,k)=>({label:c.name,data:[costVals[k]],backgroundColor:c.color,borderRadius:2}))},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>ctx.dataset.label+': '+fm(ctx.parsed.x)+' ₽'}}},
+      scales:{x:{stacked:true,display:false},y:{stacked:true,display:false}}}
+  });
+  const totalCost = costVals.reduce((a,b)=>a+b,0);
+  document.getElementById('legend-cost').innerHTML = COST_CATS.map((c,k)=>
+    costVals[k]>0 ? `<span><span class="sw" style="background:${c.color}"></span>${c.name} — ${fm(costVals[k])} ₽ (${pct(costVals[k]/totalCost)})</span>` : ''
+  ).join('');
+
+  // ---- comparison table vs previous month ----
+  const rows=[
+    {l:'Выручка', cur:D.revenue[idx], prev: idx>0?D.revenue[idx-1]:null, tot:true, dir:null},
+    {l:'Себестоимость', cur:D.cogs[idx], prev: idx>0?D.cogs[idx-1]:null, dir:'expense'},
+    {l:'ФОТ по направлениям', cur:D.fot[idx], prev: idx>0?D.fot[idx-1]:null, dir:'expense'},
+    {l:'Общепроизводственные', cur:D.opex[idx], prev: idx>0?D.opex[idx-1]:null, dir:'expense'},
+    {l:'Валовая прибыль', cur:D.gross[idx], prev: idx>0?D.gross[idx-1]:null, tot:true, dir:'profit'},
+    {l:'Коммерческие', cur:D.commercial[idx], prev: idx>0?D.commercial[idx-1]:null, dir:'expense'},
+    {l:'Адм. расходы', cur:D.admin[idx], prev: idx>0?D.admin[idx-1]:null, dir:'expense'},
+    {l:'Налоги', cur:D.taxes[idx], prev: idx>0?D.taxes[idx-1]:null, dir:'expense'},
+    {l:'Операционная прибыль', cur:D.opProfit[idx], prev: idx>0?D.opProfit[idx-1]:null, tot:true, dir:'profit'},
+    {l:'Чистая прибыль', cur:D.netProfit[idx], prev: idx>0?D.netProfit[idx-1]:null, tot:true, dir:'profit'},
+    {l:'Дивиденды', cur:D.dividends[idx], prev: idx>0?D.dividends[idx-1]:null, dir:'expense'},
+    {l:'Остаток', cur:D.ostatok[idx], prev: idx>0?D.ostatok[idx-1]:null, tot:true, dir:'profit'},
+  ];
+  const rev=D.revenue[idx], prevRev= idx>0?D.revenue[idx-1]:null;
+  const trs = rows.map(r=>{
+    const shareCur = rev? r.cur/rev : 0;
+    let badge='<span class="badge flat">—</span>';
+    let prevShareTxt='—';
+    if(idx>0 && prevRev){
+      const shareForCur = r.l==='Выручка'? 1 : shareCur;
+      const sharePrev = r.l==='Выручка'? 1 : (r.prev/prevRev);
+      prevShareTxt = pct(sharePrev);
+      const deltaPP = shareForCur - sharePrev;
+      if(r.l!=='Выручка' && Math.abs(deltaPP)>0.0005){
+        const isGoodDir = r.dir==='profit' ? deltaPP>0 : deltaPP<0; // profit: rising share is good; expense: rising share is bad
+        badge = `<span class="badge ${isGoodDir?'good':'bad'}">${pp(deltaPP)}</span>`;
+      }
+    }
+    return `<tr class="${r.tot?'tot':''}">
+      <td>${r.l}</td>
+      <td class="${r.cur<0?'neg':''}" style="text-align:right">${fm(r.cur)}</td>
+      <td style="text-align:right;color:#898781">${r.l==='Выручка'?'100.0%':pct(shareCur)}</td>
+      <td style="text-align:right;color:#898781">${idx>0?prevShareTxt:'—'}</td>
+      <td style="text-align:right">${badge}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tbl-cmp').innerHTML = `
+    <tr><th style="text-align:left">Показатель</th><th>Сумма, ₽</th><th>% ТО</th><th>Пред. %</th><th>Δ п.п.</th></tr>
+    ${trs}`;
+  if(idx===0){
+    document.getElementById('tbl-cmp').insertAdjacentHTML('beforeend', `<tr><td colspan="5" style="color:#999;font-size:10px;padding-top:6px">Нет данных за декабрь 2025 — сравнение начнётся с февраля.</td></tr>`);
+  }
+
+  // ---- detail chips (non-zero subcategories only) ----
+  const chips=[];
+  [OPEX_D,COMM_D,ADM_D,TAX_D].forEach(dict=>{
+    Object.entries(dict).forEach(([name,arr])=>{ if(arr[idx]) chips.push(`<div class="mi">${name}: <b>${fm(arr[idx])} ₽</b></div>`); });
+  });
+  document.getElementById('mini-detail').innerHTML = chips.length? chips.join('') : '<div class="mi">Нет дополнительных статей за месяц</div>';
+
+  document.getElementById('callout-month').innerHTML = `📱 Напоминание: долг клиентов по абонентке за ПО (≈ ${fm(ABONENTKA_DEBT)} ₽) в этом отчёте не отражён ни в одном месяце.`;
+
+  renderInsights('insights-month', MONTH_INSIGHTS[idx]||[]);
+}
+
+// =====================  BALANCE  =====================
+let chBA=null, chBL=null;
+function renderBalance(){
+  document.getElementById('kpi-bal').innerHTML = `
+    <div class="kc"><div class="l">Итого активы, ${BAL.date}</div><div class="v">${fm(BAL.totalAssets)} ₽</div></div>
+    <div class="kc"><div class="l">Итого пассивы</div><div class="v">${fm(BAL.totalLiab)} ₽</div></div>
+    <div class="kc"><div class="l">Денежные средства</div><div class="v">${fm(BAL.cash,2)} ₽</div><div class="s">${pct(BAL.cash/BAL.totalAssets)} активов</div></div>
+    <div class="kc risk"><div class="l">Просроченная ДЗ клиентов</div><div class="v">${fm(BAL.dzClients)} ₽</div><div class="s">${pct(BAL.dzClients/BAL.totalAssets)} активов, 100% просрочка</div></div>`;
+
+  if(chBA) chBA.destroy();
+  chBA = new Chart(document.getElementById('cBalAssets'),{
+    type:'doughnut',
+    data:{labels:['Денежные средства','ДЗ от клиентов (просрочена)'],
+      datasets:[{data:[BAL.cash,BAL.dzClients],backgroundColor:[BD,R]}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}}}}
+  });
+  if(chBL) chBL.destroy();
+  const liabLabels=['Нераспр. прибыль','Долг УСН','Задолж. по зарплате','УК'];
+  const liabVals=[BAL.profit,BAL.usnDebt,BAL.kzSalary,BAL.capital];
+  chBL = new Chart(document.getElementById('cBalLiab'),{
+    type:'doughnut',
+    data:{labels:liabLabels, datasets:[{data:liabVals,backgroundColor:[G,'#fab219',R,BD]}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}}}}
+  });
+
+  document.getElementById('tbl-bal-assets').innerHTML = `
+    <tr><th style="text-align:left">Статья</th><th>₽</th><th>% активов</th></tr>
+    <tr><td>Основные средства</td><td>${fm(BAL.os)}</td><td>${pct(BAL.os/BAL.totalAssets)}</td></tr>
+    <tr><td>Финансовые вложения долгосрочные</td><td>${fm(BAL.finLong)}</td><td>${pct(BAL.finLong/BAL.totalAssets)}</td></tr>
+    <tr><td>Денежные средства</td><td>${fm(BAL.cash,2)}</td><td>${pct(BAL.cash/BAL.totalAssets)}</td></tr>
+    <tr><td>Задолженность от клиентов</td><td class="neg">${fm(BAL.dzClients)}</td><td>${pct(BAL.dzClients/BAL.totalAssets)}</td></tr>
+    <tr><td>Задолженность от поставщиков</td><td>${fm(BAL.dzSuppliers)}</td><td>${pct(BAL.dzSuppliers/BAL.totalAssets)}</td></tr>
+    <tr><td>Товарные запасы</td><td>${fm(BAL.stock)}</td><td>${pct(BAL.stock/BAL.totalAssets)}</td></tr>
+    <tr><td>Товар в пути</td><td>${fm(BAL.transit)}</td><td>${pct(BAL.transit/BAL.totalAssets)}</td></tr>
+    <tr class="tot"><td>Итого активы</td><td>${fm(BAL.totalAssets)}</td><td>100%</td></tr>`;
+
+  document.getElementById('tbl-bal-liab').innerHTML = `
+    <tr><th style="text-align:left">Статья</th><th>₽</th><th>% пассивов</th></tr>
+    <tr><td>Нераспределённая прибыль</td><td class="pos">${fm(BAL.profit)}</td><td>${pct(BAL.profit/BAL.totalLiab)}</td></tr>
+    <tr><td>Займ от учредителя</td><td>${fm(BAL.loanFounder)}</td><td>${pct(BAL.loanFounder/BAL.totalLiab)}</td></tr>
+    <tr><td>Уставный капитал</td><td>${fm(BAL.capital)}</td><td>${pct(BAL.capital/BAL.totalLiab)}</td></tr>
+    <tr><td>Долг по УСН</td><td class="neg">${fm(BAL.usnDebt)}</td><td>${pct(BAL.usnDebt/BAL.totalLiab)}</td></tr>
+    <tr><td>Задолженность поставщикам</td><td>${fm(BAL.kzSuppliers)}</td><td>${pct(BAL.kzSuppliers/BAL.totalLiab)}</td></tr>
+    <tr><td>Задолженность по зарплате</td><td class="neg">${fm(BAL.kzSalary)}</td><td>${pct(BAL.kzSalary/BAL.totalLiab)}</td></tr>
+    <tr><td>Задолженность по страховым взносам</td><td>${fm(BAL.kzInsurance)}</td><td>${pct(BAL.kzInsurance/BAL.totalLiab)}</td></tr>
+    <tr><td>Задолженность клиентам (авансы)</td><td>${fm(BAL.kzAdvances)}</td><td>${pct(BAL.kzAdvances/BAL.totalLiab)}</td></tr>
+    <tr class="tot"><td>Итого пассивы</td><td>${fm(BAL.totalLiab)}</td><td>100%</td></tr>`;
+
+  document.getElementById('callout-bal').innerHTML = `📱 <b>Вне баланса:</b> долг клиентов по абонентке за ПО ≈ ${fm(ABONENTKA_DEBT)} ₽ — не заведён ни в дебиторку, ни куда-либо ещё. При учёте этой суммы реальные активы компании были бы примерно на ${pct(ABONENTKA_DEBT/BAL.totalAssets)} больше показанных ${fm(BAL.totalAssets)} ₽.`;
+
+  renderInsights('insights-bal', BAL_INSIGHTS);
+}
+
+renderOverview();
+</script>
+</body>
+</html>
