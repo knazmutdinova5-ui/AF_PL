@@ -158,7 +158,7 @@ tr.sub td:first-child{padding-left:18px;color:#777;font-size:10.5px}
     <div class="logo">АФ</div>
     <div>
       <div class="hdr-title">ОПиУ и Баланс — ООО «АЙДИФАРМ»</div>
-      <div class="hdr-sub">Январь – Август 2026 · только для собственников АФ</div>
+      <div class="hdr-sub">Январь – Сентябрь 2026 · только для собственников АФ</div>
     </div>
   </div>
   <div class="tabs">
@@ -240,32 +240,33 @@ tr.sub td:first-child{padding-left:18px;color:#777;font-size:10.5px}
 
   <div class="slabel">Аналитика CFO — баланс</div>
   <div id="insights-bal"></div>
-  <div class="note">Баланс собирается впервые (учёт восстановлен) — пока одна точка на 01.09.2026 (итоги августа). По итогам сентября появится столбец на 01.10 и далее помесячно.</div>
+  <div class="note">Две точки баланса: 01.09 (итоги августа, пересчитано) и 01.10 (итоги сентября). По итогам октября добавится третья колонка и начнётся полноценная динамика.</div>
 </div>
 
 </div>
 </div>
 
 <script>
-const MO=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг'];
-const MF=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август'];
+const MO=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен'];
+const MF=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь'];
 const G='#0ca30c', R='#d03b3b', BD='#1f6fa8', BR='#4a90c9', SER='#ec835a';
 const fm=(v,d=0)=>{const n=Number(v)||0; return (n<0?'-':'')+Math.abs(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});};
 const pct=(v)=>(v*100).toFixed(1)+'%';
 const pp=(v)=>{const s=v>0?'+':(v<0?'':''); return s+(v*100).toFixed(1);};
 
-// ---- P&L data, Jan-Aug 2026 (actuals; Sep started but not yet closed) ----
+// ---- P&L data, Jan-Sep 2026 (actuals; Oct started but not yet closed — excluded) ----
+// Aug restated after Sep close: payroll accruals arrived late from accounting (ФОТ 183 133 -> 609 941)
 const D={
-  revenue: [857650,672600,770500,871600,371600,2952506,1614145,1010000],
-  cogs:    [101270,107878,343985,487911,2796,679843,133180,194810],
-  fot:     [390000,650097,512098,369520,459050,519400,419033,183133],
-  opex:    [15000,15000,45000,15000,30000,105153,118626,60887],
-  commercial:[10909,50000,0,117680,15000,51693,48082,43000],
-  admin:   [52311,30476,24309,4428,5277,113839,103079,54559],
-  taxes:   [25000,25000,25000,25000,25000,25000,40000,40400],
-  belowOp: [0,0,0,0,0,0,0,0],
-  dividends:[288000,244873,169380,0,51990,98239,53074,0],
-  cumulative:[-472915,-923638,-1272911,-1420850,-1638363,-279023,420047,853259],
+  revenue: [857650,672600,770500,871600,371600,2952506,1614145,1010000,324000],
+  cogs:    [101270,107878,343985,487911,2796,679843,133180,194810,54450],
+  fot:     [390000,650097,512098,369520,459050,519400,419033,609941,457938],
+  opex:    [15000,15000,45000,15000,30000,105153,118626,60887,92317],
+  commercial:[10909,50000,0,117680,15000,51693,48082,43000,71000],
+  admin:   [52311,30476,24309,4428,5277,113839,103079,54559,39726],
+  taxes:   [25000,25000,25000,25000,25000,25000,40000,40400,12960],
+  belowOp: [0,0,0,0,0,0,0,0,0],
+  dividends:[288000,244873,169380,0,51990,98239,53074,0,7504],
+  cumulative:[-472915,-923638,-1272911,-1420850,-1638363,-279023,420047,426451,14556],
 };
 D.gross    = D.revenue.map((r,i)=>r-D.cogs[i]-D.fot[i]-D.opex[i]);
 D.pretax   = D.gross.map((g,i)=>g-D.commercial[i]-D.admin[i]);
@@ -288,50 +289,62 @@ const COST_CATS=[
 
 // detail subcategories (only non-zero lines matter for drill-down)
 const OPEX_D = {
-  'Транспортные услуги, логистика':[0,0,0,0,0,17049,66811,383],
-  'Содержание автопарка':[0,0,0,0,0,38830,0,0],
-  'Расходы на топливо':[15000,15000,45000,15000,30000,49274,51815,60504],
+  'Транспортные услуги, логистика':[0,0,0,0,0,17049,66811,383,0],
+  'Содержание автопарка':[0,0,0,0,0,38830,0,0,19590],
+  'Расходы на топливо':[15000,15000,45000,15000,30000,49274,51815,60504,72727],
 };
 const COMM_D = {
-  'Командировочные расходы':[5500,50000,0,12180,15000,51693,15082,7000],
-  'Представительские расходы':[5409,0,0,0,0,0,0,0],
-  'Маркетинговые подрядчики':[0,0,0,105500,0,0,33000,36000],
+  'Командировочные расходы':[5500,50000,0,12180,15000,51693,15082,7000,51000],
+  'Представительские расходы':[5409,0,0,0,0,0,0,0,0],
+  'Маркетинговые подрядчики':[0,0,0,105500,0,0,33000,36000,20000],
 };
 const ADM_D = {
-  'Комиссия банка':[5471,15133,3079,4428,5277,13839,3079,3559],
-  'Обучение персонала':[0,0,0,0,0,100000,100000,50000],
-  'Содержание офиса':[0,15343,0,0,0,0,0,0],
-  'Аренда офиса':[23940,0,0,0,0,0,0,0],
-  'Связь, интернет':[15000,0,11230,0,0,0,0,1000],
-  'Программное обеспечение':[7900,0,0,0,0,0,0,0],
-  'Консультационные услуги':[0,0,10000,0,0,0,0,0],
+  'Комиссия банка':[5471,15133,3079,4428,5277,13839,3079,3559,4526],
+  'Обучение персонала':[0,0,0,0,0,100000,100000,50000,0],
+  'Содержание офиса':[0,15343,0,0,0,0,0,0,0],
+  'Аренда офиса':[23940,0,0,0,0,0,0,0,0],
+  'Связь, интернет':[15000,0,11230,0,0,0,0,1000,0],
+  'Программное обеспечение':[7900,0,0,0,0,0,0,0,0],
+  'Консультационные услуги (оплата финменеджера)':[0,0,10000,0,0,0,0,0,32250],
 };
-const TAX_D = { 'УСН начисленный':[25000,25000,25000,25000,25000,25000,40000,40400] };
+const TAX_D = { 'УСН начисленный':[25000,25000,25000,25000,25000,25000,40000,40400,12960] };
 
-// ---- Balance, single point: 01.09.2026 (итоги августа) ----
-const BAL = {
-  date:'01.09.2026 (итоги августа)',
-  os:0, finLong:0, cash:68750.77, dzClients:990283, dzSuppliers:0, stock:0, transit:0,
-  profit:833632, loanFounder:0, capital:10000, usnDebt:125402, kzSuppliers:0, kzSalary:90000, kzInsurance:0, kzAdvances:0,
-};
-BAL.totalAssets = BAL.os+BAL.finLong+BAL.cash+BAL.dzClients+BAL.dzSuppliers+BAL.stock+BAL.transit;
-BAL.totalLiab   = BAL.profit+BAL.loanFounder+BAL.capital+BAL.usnDebt+BAL.kzSuppliers+BAL.kzSalary+BAL.kzInsurance+BAL.kzAdvances;
-const AR_OVERDUE = BAL.dzClients; // 100% просрочено, со слов Карины
-const ABONENTKA_DEBT = 1500000; // долг клиентов по абонентке за ПО, не отражён ни в ОПиУ, ни в балансе (оценочно)
+// ---- Balance, two points now: 01.09 (итоги августа, восстановлен задним числом) и 01.10 (итоги сентября) ----
+// С сентября в баланс впервые заведены: заём от Диалог Трейд (14.5 млн) и дебиторка по абонентке (ранее — вне баланса)
+function mkBal(o){
+  o.totalAssets = o.os+o.finLong+o.cash+o.dzClients+o.abonentka+o.dzSuppliers+o.stock+o.transit;
+  o.totalLiab   = o.profit+o.loanFounder+o.capital+o.usnDebt+o.kzSuppliers+o.kzSalary+o.kzInsurance+o.kzAdvances+o.dtLoan;
+  o.equity      = o.profit+o.loanFounder+o.capital;
+  return o;
+}
+const BAL0 = mkBal({
+  date:'01.09.2026', label:'итоги августа (пересчитано)',
+  os:0, finLong:0, cash:68750.77, dzClients:990283, abonentka:1500000, dzSuppliers:0, stock:0, transit:0,
+  profit:-12595018, loanFounder:0, capital:10000, usnDebt:125402, kzSuppliers:0, kzSalary:518650, kzInsurance:0, kzAdvances:0, dtLoan:14500000,
+});
+const BAL1 = mkBal({
+  date:'01.10.2026', label:'итоги сентября',
+  os:0, finLong:0, cash:24103, dzClients:575283, abonentka:1203000, dzSuppliers:0, stock:0, transit:0,
+  profit:-13303913, loanFounder:0, capital:10000, usnDebt:138362, kzSuppliers:0, kzSalary:457937, kzInsurance:0, kzAdvances:0, dtLoan:14500000,
+});
+const BAL = BAL1; // latest point, used where a single reference is needed
+const AR_OVERDUE = BAL1.dzClients; // ранее подтверждалась как просроченная на 100% — актуальность на сентябрь не переспрашивала
 
 const OV_INSIGHTS=[
-  {t:'amber', i:'⚠️', x:'<strong>Январь–май и июнь–август считались по-разному.</strong> Учёт восстанавливался с января по сентябрь, себестоимость до июня признавалась кассовым методом — поднять с/с по старым проектам запуска пока нельзя. Поэтому резкий скачок валовой маржи с −32% (май) до +55.8% (июнь) — это в первую очередь эффект перехода на нормальный учёт, а не разовый рывок бизнеса. Сравнивать месяцы «в лоб» до и после июня некорректно.'},
-  {t:'green', i:'✅', x:'<strong>Июнь–август — устойчиво прибыльные месяцы.</strong> Операционная прибыль 1.46 млн → 752 тыс. → 433 тыс., маржа держится в диапазоне 43–49%. Накопленный результат с начала года вышел в плюс: 853 259 ₽ на конец августа (против −1.64 млн на дно в мае).'},
-  {t:'red',  i:'🔴', x:'<strong>Вся дебиторка от клиентов просрочена — 990 283 ₽ (100%).</strong> Это 93% всех активов компании при остатке денег всего 68.75 тыс. ₽. Реальный риск кассового разрыва, если инкассация не ускорится.'},
-  {t:'violet',i:'📱', x:'<strong>Вне отчёта — долг по абонентке ≈1.5 млн ₽.</strong> Клиенты должны АФ за подписку на ПО, но эта сумма не заведена ни в ОПиУ, ни в баланс. Фактическая дебиторская нагрузка выше показанной здесь примерно в 2.5 раза.'},
-  {t:'amber', i:'⚠️', x:'<strong>Налог (УСН) — расчётная оценка.</strong> 25 тыс./мес до июня, 40 тыс. с июля — фиксированные суммы для примерного начисления, не факт по декларации. Уточнить после сдачи отчётности.'},
+  {t:'red',  i:'🔴', x:'<strong>Сентябрь — провал: выручка 324 тыс. ₽, минимум за год (ниже майского дна в 371.6 тыс.).</strong> При этом ФОТ остался на уровне 457.9 тыс. — 141% выручки. Операционный убыток −404.4 тыс. Открытый вопрос к собственнику: реальное падение продаж или часть выручки не успели закрыть и она уедет в октябрь.'},
+  {t:'amber', i:'⚠️', x:'<strong>Август пересчитан задним числом.</strong> ФОТ скорректирован с 183.1 тыс. до 609.9 тыс. (данные по начислениям пришли с опозданием) — чистая прибыль августа упала с 433.2 тыс. до 6.4 тыс. Все показатели на дашборде уже по актуальной версии.'},
+  {t:'amber', i:'⚠️', x:'<strong>Разовые или новые расходы в сентябре требуют проверки у собственника:</strong> топливо 72.7 тыс. (обычно 15–60 тыс.) и содержание автопарка 19.6 тыс. — не было в бюджете прошлых месяцев в таком объёме.'},
+  {t:'amber', i:'⚠️', x:'<strong>Январь–май и июнь–август считались по-разному.</strong> Учёт восстанавливался задним числом, себестоимость до июня признавалась кассовым методом. Скачок валовой маржи с −32% (май) до +55.8% (июнь) — в первую очередь эффект перехода на нормальный учёт, а не разовый рывок бизнеса.'},
+  {t:'red',  i:'🔴', x:'<strong>Накопленный результат почти обнулился:</strong> 426.5 тыс. на конец августа → 14.6 тыс. на конец сентября. Девять месяцев восстановленного учёта фактически вышли «в ноль».'},
+  {t:'amber', i:'⚠️', x:'<strong>Налог (УСН) — расчётная оценка</strong> во всех месяцах, не факт по декларации. Уточнить после сдачи отчётности.'},
 ];
 
 const BAL_INSIGHTS=[
-  {t:'red',   i:'🔴', x:'<strong>Дебиторка от клиентов — 990 283 ₽, вся сумма просрочена.</strong> Это 93% активов баланса. При денежном остатке 68.75 тыс. ₽ ликвидность компании держится практически полностью на инкассации этой задолженности.'},
-  {t:'violet',i:'📱', x:'<strong>Долг по абонентке ≈1.5 млн ₽ — вне баланса.</strong> Не отражён ни в активах, ни в ОПиУ. При включении дебиторка выросла бы примерно в 2.5 раза, а реальная валюта баланса — почти в 2.4 раза.'},
-  {t:'green', i:'✅', x:'<strong>Баланс лёгкий и без долговой нагрузки.</strong> Нет кредитов, лизинга, займов и авансов от клиентов. УК всего 10 тыс. ₽, обязательства — только текущий долг по УСН (125.4 тыс.) и по зарплате (90 тыс.).'},
-  {t:'amber', i:'⚠️', x:'<strong>Первая сборка баланса.</strong> Данные восстановлены только на 01.09 — исторической динамики по месяцам пока нет, начнёт копиться со следующего периода (01.10 и далее).'},
+  {t:'red',   i:'🔴', x:'<strong>Собственный капитал отрицательный — около −13.3 млн ₽ на 01.10.</strong> Причина — впервые отражённый в балансе заём от Диалог Трейд (14.5 млн ₽, аффилированная компания): раньше его не показывали именно в АФ, но раз он фигурирует в балансе ДТ, здесь он тоже должен быть, иначе не сойдётся уже у ДТ. Де-факто АФ существует на фондировании от ДТ.'},
+  {t:'red',   i:'🔴', x:'<strong>Денежные средства упали до 24 103 ₽</strong> (было 68 751 ₽ на 01.09) — при долге по зарплате 457 937 ₽ этого не хватает даже на одну выплату. Основной резерв ликвидности — дебиторка (575 283 ₽ от клиентов + 1 203 000 ₽ по абонентке).'},
+  {t:'amber', i:'⚠️', x:'<strong>Дебиторка по абонентке теперь официально в балансе</strong> — 1 203 000 ₽ на 01.10 (было 1 500 000 ₽ на 01.09, часть, похоже, закрылась за сентябрь). Раньше эта сумма нигде не фигурировала.'},
+  {t:'amber', i:'⚠️', x:'<strong>Долг по зарплате вырос:</strong> 518 650 ₽ (01.09) → 457 937 ₽ (01.10). Вместе с долгом по УСН (138 362 ₽) — единственные текущие обязательства помимо займа ДТ.'},
+  {t:'amber', i:'⚠️', x:'<strong>Баланс собирается второй месяц.</strong> Пока две точки — 01.09 и 01.10, сравнение между ними уже возможно, полноценная динамика накопится через несколько месяцев.'},
 ];
 
 const MONTH_INSIGHTS={
@@ -344,11 +357,13 @@ const MONTH_INSIGHTS={
   5:[{t:'green',i:'✅',x:'<strong>Перелом: выручка 2.95 млн (рекорд), операционная прибыль 1.46 млн, маржа 55.8%.</strong> С этого месяца учёт затрат восстановлен по методологии — сравнивать с более ранними месяцами напрямую нельзя.'},
      {t:'amber',i:'⚠️',x:'Обучение персонала 100 тыс., автопарк 38.8 тыс. — разовые статьи, совпавшие с рекордной выручкой.'}],
   6:[{t:'green',i:'✅',x:'<strong>Июль стабильно сильный:</strong> выручка 1.61 млн, маржа 58.4% — лучшая за период. Обучение персонала ещё раз 100 тыс.'}],
-  7:[{t:'green',i:'✅',x:'<strong>Август: выручка 1.01 млн, маржа 56.6%, чистая прибыль 433 тыс.</strong> Дивиденды не выплачивались. Накопленный итог с начала года вышел на 853 259 ₽.'},
-     {t:'violet',i:'📱',x:'Напоминание: долг клиентов по абонентке (~1.5 млн) в эту цифру не входит.'}],
+  7:[{t:'amber',i:'🔄',x:'<strong>Август пересчитан задним числом.</strong> Выручка 1.01 млн осталась прежней, но ФОТ доначислен с 183.1 тыс. до 609.9 тыс. (данные пришли с опозданием от бухгалтера) — чистая прибыль упала с 433.2 тыс. до 6.4 тыс., маржа — с 42.9% до 0.6%. Фактически месяц вышел в ноль, а не в уверенный плюс, как казалось раньше.'}],
+  8:[{t:'red',i:'🔴',x:'<strong>Сентябрь — худший месяц года.</strong> Выручка 324 тыс. (минимум), ФОТ 457.9 тыс. (141% выручки), операционный убыток −404.4 тыс. Накопленный итог с начала года почти обнулился — 14.6 тыс. ₽.'},
+     {t:'amber',i:'❓',x:'Открытые вопросы к собственнику: (1) провал выручки — реальное падение спроса или перенос выставления на октябрь; (2) топливо 72.7 тыс. и автопарк 19.6 тыс. — разовая история или новый уровень расходов.'},
+     {t:'amber',i:'ℹ️',x:'Новая статья «Консультационные услуги» 32 250 ₽ — это оплата услуг финансового менеджера (не вопрос, для справки).'}],
 };
 
-let curM=7;
+let curM=8;
 function sw(t){
   document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['overview','month','balance'][i]===t));
   document.querySelectorAll('.sec').forEach(el=>el.classList.remove('active'));
@@ -375,15 +390,15 @@ function renderOverview(){
   }
   document.getElementById('kpi-ov').innerHTML = `
     <div class="kc"><div class="l">Выручка (${MF[i].toLowerCase()})</div><div class="v">${(D.revenue[i]/1e6).toFixed(1)} млн</div>${revDeltaHtml}</div>
-    <div class="kc"><div class="l">Вал. прибыль</div><div class="v">${(D.gross[i]/1e6).toFixed(1)} млн</div><div class="s">${pct(D.grossM[i])}</div></div>
-    <div class="kc"><div class="l">Опер. прибыль</div><div class="v">${(D.opProfit[i]/1e6).toFixed(1)} млн</div><div class="s">${pct(D.opM[i])}</div></div>
+    <div class="kc"><div class="l">Вал. прибыль</div><div class="v ${D.gross[i]>=0?'':'neg'}">${(D.gross[i]/1e6).toFixed(1)} млн</div><div class="s">${pct(D.grossM[i])}</div></div>
+    <div class="kc"><div class="l">Опер. прибыль</div><div class="v ${D.opProfit[i]>=0?'':'neg'}">${(D.opProfit[i]/1e6).toFixed(1)} млн</div><div class="s">${pct(D.opM[i])}</div></div>
     <div class="kc"><div class="l">Чист. прибыль</div><div class="v ${D.netProfit[i]>=0?'pos':'neg'}">${(D.netProfit[i]/1e6).toFixed(1)} млн</div><div class="s">${pct(D.netM[i])}</div></div>
     <div class="kc"><div class="l">Выручка ${i+1} мес.</div><div class="v">${(cumRevenue/1e6).toFixed(1)} млн</div><div class="s">итого с января</div></div>
     <div class="kc"><div class="l">Чист. приб. накопл.</div><div class="v ${D.cumulative[i]>=0?'pos':'neg'}">${(D.cumulative[i]/1e6).toFixed(1)} млн</div><div class="s">${i+1} месяцев</div></div>`;
   document.getElementById('kpi-risk').innerHTML = `
-    <div class="kc risk"><div class="l">Просроченная дебиторка</div><div class="v">${fm(AR_OVERDUE)} ₽</div><div class="s">100% ДЗ от клиентов, 93% активов баланса</div></div>
-    <div class="kc violet"><div class="l">Долг по абонентке (вне отчёта)</div><div class="v">≈ ${fm(ABONENTKA_DEBT)} ₽</div><div class="s">не в ОПиУ и не в балансе</div></div>
-    <div class="kc"><div class="l">Денежные средства на 01.09</div><div class="v">${fm(BAL.cash,2)} ₽</div><div class="s">6% от активов</div></div>`;
+    <div class="kc risk"><div class="l">Дебиторка от клиентов</div><div class="v">${fm(AR_OVERDUE)} ₽</div><div class="s">ранее подтверждалась как просроченная на 100% — на сентябрь уточняется</div></div>
+    <div class="kc risk"><div class="l">Заём от Диалог Трейд</div><div class="v">${fm(BAL1.dtLoan)} ₽</div><div class="s">собственный капитал: ${fm(BAL1.equity)} ₽</div></div>
+    <div class="kc warn"><div class="l">Денежные средства на 01.10</div><div class="v">${fm(BAL1.cash,2)} ₽</div><div class="s">было 68 751 ₽ на 01.09</div></div>`;
 
   if(chRP) chRP.destroy();
   chRP = new Chart(document.getElementById('cRevProfit'),{
@@ -434,7 +449,7 @@ function renderOverview(){
       scales:{x:{stacked:true,ticks:{font:{size:10}},grid:{display:false}},y:{stacked:true,ticks:{callback:v=>v+'%',font:{size:9}},max:100,grid:{color:'#e1e0d9'}}}}
   });
 
-  document.getElementById('callout-ov').innerHTML = `📱 <b>Вне ОПиУ:</b> клиенты должны АФ за подписку на уже внедрённое ПО (абонентка) ≈ ${fm(ABONENTKA_DEBT)} ₽. Эта сумма не признана выручкой и не выставлена в отчёте — фактическая база начисления шире показанной здесь.`;
+  document.getElementById('callout-ov').innerHTML = `💡 <b>Контекст сентября:</b> в баланс впервые заведён заём от Диалог Трейд (14.5 млн ₽) — раньше его не показывали в отчётности АФ отдельно, но он уже учтён на стороне ДТ, поэтому должен быть и здесь. Дебиторка по абонентке (≈1.2 млн ₽ на 01.10) тоже теперь официально в балансе, а не отдельным напоминанием, как раньше.`;
 
   renderInsights('insights-ov', OV_INSIGHTS);
 }
@@ -552,7 +567,13 @@ function renderMonth(idx){
   });
   document.getElementById('mini-detail').innerHTML = chips.length? chips.join('') : '<div class="mi">Нет дополнительных статей за месяц</div>';
 
-  document.getElementById('callout-month').innerHTML = `📱 Напоминание: долг клиентов по абонентке за ПО (≈ ${fm(ABONENTKA_DEBT)} ₽) в этом отчёте не отражён ни в одном месяце.`;
+  const calloutEl = document.getElementById('callout-month');
+  const monthCallouts = {
+    7: '🔄 Август показан уже в пересчитанном виде: ФОТ доначислен с 183.1 тыс. до 609.9 тыс. задним числом.',
+    8: '❓ По сентябрю есть открытые вопросы к собственнику — провал выручки и всплеск расходов на топливо/автопарк, см. комментарий ниже.',
+  };
+  if(monthCallouts[idx]){ calloutEl.style.display='block'; calloutEl.innerHTML = monthCallouts[idx]; }
+  else { calloutEl.style.display='none'; calloutEl.innerHTML=''; }
 
   renderInsights('insights-month', MONTH_INSIGHTS[idx]||[]);
 }
@@ -561,51 +582,56 @@ function renderMonth(idx){
 let chBA=null, chBL=null;
 function renderBalance(){
   document.getElementById('kpi-bal').innerHTML = `
-    <div class="kc"><div class="l">Итого активы, ${BAL.date}</div><div class="v">${fm(BAL.totalAssets)} ₽</div></div>
-    <div class="kc"><div class="l">Итого пассивы</div><div class="v">${fm(BAL.totalLiab)} ₽</div></div>
-    <div class="kc"><div class="l">Денежные средства</div><div class="v">${fm(BAL.cash,2)} ₽</div><div class="s">${pct(BAL.cash/BAL.totalAssets)} активов</div></div>
-    <div class="kc risk"><div class="l">Просроченная ДЗ клиентов</div><div class="v">${fm(BAL.dzClients)} ₽</div><div class="s">${pct(BAL.dzClients/BAL.totalAssets)} активов, 100% просрочка</div></div>`;
+    <div class="kc"><div class="l">Итого активы, 01.10 (${BAL1.label})</div><div class="v">${fm(BAL1.totalAssets)} ₽</div></div>
+    <div class="kc"><div class="l">Итого пассивы</div><div class="v">${fm(BAL1.totalLiab)} ₽</div></div>
+    <div class="kc risk"><div class="l">Собственный капитал</div><div class="v">${fm(BAL1.equity)} ₽</div><div class="s">из-за займа ДТ 14.5 млн</div></div>
+    <div class="kc warn"><div class="l">Денежные средства</div><div class="v">${fm(BAL1.cash,2)} ₽</div><div class="s">было ${fm(BAL0.cash,2)} ₽ на 01.09</div></div>`;
 
   if(chBA) chBA.destroy();
   chBA = new Chart(document.getElementById('cBalAssets'),{
     type:'doughnut',
-    data:{labels:['Денежные средства','ДЗ от клиентов (просрочена)'],
-      datasets:[{data:[BAL.cash,BAL.dzClients],backgroundColor:[BD,R]}]},
+    data:{labels:['Денежные средства','ДЗ от клиентов','Дебиторка по абонентке'],
+      datasets:[{data:[BAL1.cash,BAL1.dzClients,BAL1.abonentka],backgroundColor:[BD,R,'#4a3aa7']}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}}}}
   });
   if(chBL) chBL.destroy();
-  const liabLabels=['Нераспр. прибыль','Долг УСН','Задолж. по зарплате','УК'];
-  const liabVals=[BAL.profit,BAL.usnDebt,BAL.kzSalary,BAL.capital];
+  const liabLabels=['Заём Диалог Трейд','Долг УСН','Задолж. по зарплате','УК'];
+  const liabVals=[BAL1.dtLoan,BAL1.usnDebt,BAL1.kzSalary,BAL1.capital];
   chBL = new Chart(document.getElementById('cBalLiab'),{
     type:'doughnut',
-    data:{labels:liabLabels, datasets:[{data:liabVals,backgroundColor:[G,'#fab219',R,BD]}]},
+    data:{labels:liabLabels, datasets:[{data:liabVals,backgroundColor:[R,'#fab219','#ec835a',BD]}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}}}}
   });
 
+  // for assets, growing is good (green); for liabilities, growing debt is bad (red) — invert flips that
+  const arow=(l,k,invert)=>{const d=BAL1[k]-BAL0[k]; const bad = invert? d>0 : d<0; const cls = d===0?'':(bad?'neg':'pos');
+    return `<tr><td>${l}</td><td style="text-align:right">${fm(BAL0[k])}</td><td style="text-align:right">${fm(BAL1[k])}</td><td style="text-align:right" class="${cls}">${d===0?'—':(d>0?'+':'')+fm(d)}</td></tr>`;};
   document.getElementById('tbl-bal-assets').innerHTML = `
-    <tr><th style="text-align:left">Статья</th><th>₽</th><th>% активов</th></tr>
-    <tr><td>Основные средства</td><td>${fm(BAL.os)}</td><td>${pct(BAL.os/BAL.totalAssets)}</td></tr>
-    <tr><td>Финансовые вложения долгосрочные</td><td>${fm(BAL.finLong)}</td><td>${pct(BAL.finLong/BAL.totalAssets)}</td></tr>
-    <tr><td>Денежные средства</td><td>${fm(BAL.cash,2)}</td><td>${pct(BAL.cash/BAL.totalAssets)}</td></tr>
-    <tr><td>Задолженность от клиентов</td><td class="neg">${fm(BAL.dzClients)}</td><td>${pct(BAL.dzClients/BAL.totalAssets)}</td></tr>
-    <tr><td>Задолженность от поставщиков</td><td>${fm(BAL.dzSuppliers)}</td><td>${pct(BAL.dzSuppliers/BAL.totalAssets)}</td></tr>
-    <tr><td>Товарные запасы</td><td>${fm(BAL.stock)}</td><td>${pct(BAL.stock/BAL.totalAssets)}</td></tr>
-    <tr><td>Товар в пути</td><td>${fm(BAL.transit)}</td><td>${pct(BAL.transit/BAL.totalAssets)}</td></tr>
-    <tr class="tot"><td>Итого активы</td><td>${fm(BAL.totalAssets)}</td><td>100%</td></tr>`;
+    <tr><th style="text-align:left">Статья</th><th>01.09, ₽</th><th>01.10, ₽</th><th>Δ, ₽</th></tr>
+    ${arow('Основные средства','os')}
+    ${arow('Финансовые вложения долгосрочные','finLong')}
+    ${arow('Денежные средства','cash')}
+    ${arow('Задолженность от клиентов','dzClients')}
+    ${arow('Дебиторка по абонентке','abonentka')}
+    ${arow('Задолженность от поставщиков','dzSuppliers')}
+    ${arow('Товарные запасы','stock')}
+    ${arow('Товар в пути','transit')}
+    <tr class="tot"><td>Итого активы</td><td style="text-align:right">${fm(BAL0.totalAssets)}</td><td style="text-align:right">${fm(BAL1.totalAssets)}</td><td style="text-align:right">${fm(BAL1.totalAssets-BAL0.totalAssets)}</td></tr>`;
 
   document.getElementById('tbl-bal-liab').innerHTML = `
-    <tr><th style="text-align:left">Статья</th><th>₽</th><th>% пассивов</th></tr>
-    <tr><td>Нераспределённая прибыль</td><td class="pos">${fm(BAL.profit)}</td><td>${pct(BAL.profit/BAL.totalLiab)}</td></tr>
-    <tr><td>Займ от учредителя</td><td>${fm(BAL.loanFounder)}</td><td>${pct(BAL.loanFounder/BAL.totalLiab)}</td></tr>
-    <tr><td>Уставный капитал</td><td>${fm(BAL.capital)}</td><td>${pct(BAL.capital/BAL.totalLiab)}</td></tr>
-    <tr><td>Долг по УСН</td><td class="neg">${fm(BAL.usnDebt)}</td><td>${pct(BAL.usnDebt/BAL.totalLiab)}</td></tr>
-    <tr><td>Задолженность поставщикам</td><td>${fm(BAL.kzSuppliers)}</td><td>${pct(BAL.kzSuppliers/BAL.totalLiab)}</td></tr>
-    <tr><td>Задолженность по зарплате</td><td class="neg">${fm(BAL.kzSalary)}</td><td>${pct(BAL.kzSalary/BAL.totalLiab)}</td></tr>
-    <tr><td>Задолженность по страховым взносам</td><td>${fm(BAL.kzInsurance)}</td><td>${pct(BAL.kzInsurance/BAL.totalLiab)}</td></tr>
-    <tr><td>Задолженность клиентам (авансы)</td><td>${fm(BAL.kzAdvances)}</td><td>${pct(BAL.kzAdvances/BAL.totalLiab)}</td></tr>
-    <tr class="tot"><td>Итого пассивы</td><td>${fm(BAL.totalLiab)}</td><td>100%</td></tr>`;
+    <tr><th style="text-align:left">Статья</th><th>01.09, ₽</th><th>01.10, ₽</th><th>Δ, ₽</th></tr>
+    ${arow('Нераспределённая прибыль','profit',false)}
+    ${arow('Займ от учредителя','loanFounder',true)}
+    ${arow('Заём от Диалог Трейд','dtLoan',true)}
+    ${arow('Уставный капитал','capital',false)}
+    ${arow('Долг по УСН','usnDebt',true)}
+    ${arow('Задолженность поставщикам','kzSuppliers',true)}
+    ${arow('Задолженность по зарплате','kzSalary',true)}
+    ${arow('Задолженность по страховым взносам','kzInsurance',true)}
+    ${arow('Задолженность клиентам (авансы)','kzAdvances',false)}
+    <tr class="tot"><td>Итого пассивы</td><td style="text-align:right">${fm(BAL0.totalLiab)}</td><td style="text-align:right">${fm(BAL1.totalLiab)}</td><td style="text-align:right">${fm(BAL1.totalLiab-BAL0.totalLiab)}</td></tr>`;
 
-  document.getElementById('callout-bal').innerHTML = `📱 <b>Вне баланса:</b> долг клиентов по абонентке за ПО ≈ ${fm(ABONENTKA_DEBT)} ₽ — не заведён ни в дебиторку, ни куда-либо ещё. При учёте этой суммы реальные активы компании были бы примерно на ${pct(ABONENTKA_DEBT/BAL.totalAssets)} больше показанных ${fm(BAL.totalAssets)} ₽.`;
+  document.getElementById('callout-bal').innerHTML = `💡 <b>Заём от Диалог Трейд (14.5 млн ₽)</b> впервые отражён в балансе АФ — раньше его здесь не показывали, так как это смежная компания, но он уже учтён на стороне ДТ, и без него баланс ДТ «не сойдётся». Это и есть причина отрицательного собственного капитала.`;
 
   renderInsights('insights-bal', BAL_INSIGHTS);
 }
